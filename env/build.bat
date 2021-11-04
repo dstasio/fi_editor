@@ -13,7 +13,7 @@ pushd ".\build"
 
 set      ignored_warnings=-wd4201 -wd4100 -wd4189 -wd4456 -wd4505
 set common_compiler_flags=-diagnostics:column -MTd -nologo -Gm- -GR- -EHa- -Od -Oi -WX -W4 %ignored_warnings% -FAsc -Z7
-set   common_linker_flags=-incremental:no -opt:ref user32.lib
+set   common_linker_flags=-incremental:no -opt:ref user32.lib gdi32.lib
 
 REM 64-bit build
 del *.pdb > NUL 2> NUL

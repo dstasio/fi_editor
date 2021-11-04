@@ -2,10 +2,12 @@
 #include <windows.h>
 #include "datatypes.h"
 
+#define fi_assert(x) if(!(x)) {*(int *)0 = 0;}
+
 global b32 global_running;
 global b32 global_error;
-global u32 global_width = 1280;
-global u32 global_height = 720;
+global u32 global_width  = 1000;
+global u32 global_height = 1000;
 
 LRESULT CALLBACK
 win32_callback_proc(HWND window, UINT message, WPARAM w, LPARAM l)
@@ -67,6 +69,41 @@ int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR cmd_line, int sho
     {
         global_running = true;
         MSG message    = {};
+
+        // Creating DIB section, to use as backbuffer for window
+        // ======================================================================
+        BITMAPINFO dib_info = {};
+        dib_info.bmiHeader.biSize          = sizeof(BITMAPINFOHEADER);
+        dib_info.bmiHeader.biWidth         = global_width;
+        dib_info.bmiHeader.biHeight        = global_height;
+        dib_info.bmiHeader.biPlanes        = 1;
+        dib_info.bmiHeader.biBitCount      = 32;
+        dib_info.bmiHeader.biCompression   = BI_RGB;
+        //dib_info.bmiHeader.biXPelsPerMeter = ; // @todo: Raymond Chen says this is unused (by GDI), check if it has any meaning for dpi-awareness
+        //dib_info.bmiHeader.biYPelsPerMeter = ;
+
+        void *dib_memory = 0;
+        CreateDIBSection(0, &dib_info, DIB_RGB_COLORS, &dib_memory, 0, 0);
+        fi_assert(dib_memory);
+
+        for (u32 x = 0; x < global_width; ++x)
+        {
+            for (u32 y = 0; y < global_height; ++y)
+            {
+                u32 cell_size = 500;
+                u8 r = 0xFF;
+                u8 g = (u8)((x % cell_size) * (global_width  / (cell_size - 1)));
+                u8 b = (u8)((y % cell_size) * (global_height / (cell_size - 1)));
+                u32 pixel = (r << 16) | (g << 8) | b;
+                *(((u32*)dib_memory)+y*global_width+x) = pixel;
+            }
+        }
+
+        HDC device_context = GetDC(main_window);
+        StretchDIBits(device_context,
+                      0, 0, global_width, global_height,
+                      0, 0, global_width, global_height,
+                      dib_memory, &dib_info, DIB_RGB_COLORS, SRCCOPY);
 
         while(global_running)
         {
