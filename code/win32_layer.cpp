@@ -13,7 +13,7 @@
 global b32 global_running;
 global b32 global_error;
 global u32 global_width  = 1000;
-global u32 global_height = 1000;
+global u32 global_height = 720;
 global r32 global_ar = (r32)global_width / (r32)global_height;
 
 LRESULT CALLBACK
@@ -84,7 +84,7 @@ int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR cmd_line, int sho
         // Creating DIB section, to use as backbuffer for window
         // ======================================================================
         Renderer_Backbuffer backbuffer = {};
-        resize_backbuffer(&backbuffer, global_width, global_height);
+        sw_resize_backbuffer(&backbuffer, global_width, global_height);
 
         while(global_running)
         {
@@ -94,12 +94,12 @@ int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR cmd_line, int sho
                 DispatchMessage(&message);
             }
 
-            clear_backbuffer(&backbuffer);
+            sw_clear_backbuffer(&backbuffer);
 
             // drawing cursor
-            draw_square(&backbuffer, state.cursor_pos, state.cursor_size);
+            sw_draw_square(&backbuffer, state.cursor_pos, state.cursor_size);
 
-            show_backbuffer(main_window, &backbuffer);
+            sw_show_backbuffer(main_window, &backbuffer);
         }
     }
     else

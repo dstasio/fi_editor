@@ -3,12 +3,18 @@
 
 #define pixel_at_index(mem, x, y, w) (((u32*)(mem)) + ((y) * (w)) + (x))
 
-void draw_square(Renderer_Backbuffer *backbuffer,
+internal void sw_draw_square(Renderer_Backbuffer *backbuffer,
                  v2i pos, u32 size)
 {
-    for (u32 x = pos.x; x < (pos.x + size); ++x)
-    {
-        for (u32 y = pos.y; y < (pos.y + size); ++y)
+    v2i tl = {}; // top-left
+    v2i br = {}; // bottom-right
+    tl.x = max(pos.x, 0);
+    tl.y = max(pos.y, 0);
+    br.x = min(pos.x + size, backbuffer->width);
+    br.y = min(pos.y + size, backbuffer->height);
+
+    for (s32 x = tl.x; x < br.x; ++x) {
+    for (s32 y = tl.y; y < br.y; ++y)
         {
             //u32 pixel = 0xdd0000;
             u32 pixel = 0xFFFFFF;
@@ -17,12 +23,12 @@ void draw_square(Renderer_Backbuffer *backbuffer,
     }
 }
 
-void clear_backbuffer(Renderer_Backbuffer *backbuffer)
+internal void sw_clear_backbuffer(Renderer_Backbuffer *backbuffer)
 {
     SecureZeroMemory(backbuffer->memory, backbuffer->width*backbuffer->height*4);
 }
 
-void show_backbuffer(HWND window, Renderer_Backbuffer *backbuffer)
+internal void sw_show_backbuffer(HWND window, Renderer_Backbuffer *backbuffer)
 {
     HDC device_context = GetDC(window);
     StretchDIBits(device_context,
@@ -33,7 +39,7 @@ void show_backbuffer(HWND window, Renderer_Backbuffer *backbuffer)
     ReleaseDC(window, device_context);
 }
 
-void resize_backbuffer(Renderer_Backbuffer *backbuffer, u32 width, u32 height)
+internal void sw_resize_backbuffer(Renderer_Backbuffer *backbuffer, u32 width, u32 height)
 {
     backbuffer->width                        = width;
     backbuffer->height                       = height;

@@ -1,8 +1,8 @@
 #if !defined(DATATYPES_H)
 #include <stdint.h>
 
-#define global static
-#define internal static
+#define global        static
+#define internal      static
 #define local_persist static
 
 #define Kilobytes(k) (1024LL*(k))
