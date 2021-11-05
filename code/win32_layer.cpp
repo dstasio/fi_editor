@@ -2,12 +2,19 @@
 #include <windows.h>
 #include "datatypes.h"
 
+// @todo: internal only
 #define fi_assert(x) if(!(x)) {*(int *)0 = 0;}
+
+#define byte_offset(arr, t)  ((u8*)(arr) + (t))
+
+#include "win32_layer.h"
+#include "win32_renderer_software.cpp"
 
 global b32 global_running;
 global b32 global_error;
 global u32 global_width  = 1000;
 global u32 global_height = 1000;
+global r32 global_ar = (r32)global_width / (r32)global_height;
 
 LRESULT CALLBACK
 win32_callback_proc(HWND window, UINT message, WPARAM w, LPARAM l)
@@ -67,43 +74,17 @@ int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR cmd_line, int sho
                                     0, 0, instance, 0);
     if (main_window)
     {
+        Fi_State state = {};
+        state.cursor_size = 50;
+        state.cursor_pos = {170, 250};
+
         global_running = true;
         MSG message    = {};
 
         // Creating DIB section, to use as backbuffer for window
         // ======================================================================
-        BITMAPINFO dib_info = {};
-        dib_info.bmiHeader.biSize          = sizeof(BITMAPINFOHEADER);
-        dib_info.bmiHeader.biWidth         = global_width;
-        dib_info.bmiHeader.biHeight        = global_height;
-        dib_info.bmiHeader.biPlanes        = 1;
-        dib_info.bmiHeader.biBitCount      = 32;
-        dib_info.bmiHeader.biCompression   = BI_RGB;
-        //dib_info.bmiHeader.biXPelsPerMeter = ; // @todo: Raymond Chen says this is unused (by GDI), check if it has any meaning for dpi-awareness
-        //dib_info.bmiHeader.biYPelsPerMeter = ;
-
-        void *dib_memory = 0;
-        CreateDIBSection(0, &dib_info, DIB_RGB_COLORS, &dib_memory, 0, 0);
-        fi_assert(dib_memory);
-
-        for (u32 x = 0; x < global_width; ++x)
-        {
-            for (u32 y = 0; y < global_height; ++y)
-            {
-                u32 cell_size = 500;
-                u8 r = 0xFF;
-                u8 g = (u8)((x % cell_size) * (global_width  / (cell_size - 1)));
-                u8 b = (u8)((y % cell_size) * (global_height / (cell_size - 1)));
-                u32 pixel = (r << 16) | (g << 8) | b;
-                *(((u32*)dib_memory)+y*global_width+x) = pixel;
-            }
-        }
-
-        HDC device_context = GetDC(main_window);
-        StretchDIBits(device_context,
-                      0, 0, global_width, global_height,
-                      0, 0, global_width, global_height,
-                      dib_memory, &dib_info, DIB_RGB_COLORS, SRCCOPY);
+        Renderer_Backbuffer backbuffer = {};
+        resize_backbuffer(&backbuffer, global_width, global_height);
 
         while(global_running)
         {
@@ -112,6 +93,13 @@ int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR cmd_line, int sho
                 TranslateMessage(&message);
                 DispatchMessage(&message);
             }
+
+            clear_backbuffer(&backbuffer);
+
+            // drawing cursor
+            draw_square(&backbuffer, state.cursor_pos, state.cursor_size);
+
+            show_backbuffer(main_window, &backbuffer);
         }
     }
     else
