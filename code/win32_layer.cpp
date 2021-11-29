@@ -7,6 +7,9 @@
 
 #define byte_offset(arr, t)  ((u8*)(arr) + (t))
 
+#define array_count(arr) (sizeof(arr)/sizeof((arr)[0]))
+
+#include "fi_platform.h"
 #include "win32_layer.h"
 #include "win32_renderer_software.cpp"
 
@@ -86,13 +89,46 @@ int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR cmd_line, int sho
         Renderer_Backbuffer backbuffer = {};
         sw_resize_backbuffer(&backbuffer, global_width, global_height);
 
+        Input input_buffer[2];
+        Input *new_input = &input_buffer[0];
+        Input *old_input = &input_buffer[1];
         while(global_running)
         {
+            *new_input = {};
             while(PeekMessageA(&message, main_window, 0, 0, PM_REMOVE))
             {
-                TranslateMessage(&message);
-                DispatchMessage(&message);
+                switch(message.message)
+                {
+                case WM_KEYDOWN:
+                {
+                    for (Input_Key *key = &new_input->move_down;
+                         key < &new_input->last; ++key)
+                    {
+                        if (message.wParam == key->scancode) {
+                            key->down = 1;
+                            break;
+                        }
+                    }
+                } break;
+                case WM_KEYUP:
+                {
+                } break;
+                default:
+                {
+                    TranslateMessage(&message);
+                    DispatchMessage(&message);
+                } break;
+                }
             }
+
+            if (new_input->move_down.down)
+                state.cursor_pos.y -= 1;
+            if (new_input->move_up.down)
+                state.cursor_pos.y += 1;
+            if (new_input->move_left.down)
+                state.cursor_pos.x -= 1;
+            if (new_input->move_right.down)
+                state.cursor_pos.x += 1;
 
             sw_clear_backbuffer(&backbuffer);
 
@@ -100,6 +136,10 @@ int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR cmd_line, int sho
             sw_draw_square(&backbuffer, state.cursor_pos, state.cursor_size);
 
             sw_show_backbuffer(main_window, &backbuffer);
+
+            Input *temp_input = new_input;
+            new_input = old_input;
+            old_input = temp_input;
         }
     }
     else

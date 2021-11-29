@@ -16,7 +16,6 @@ internal void sw_draw_square(Renderer_Backbuffer *backbuffer,
     for (s32 x = tl.x; x < br.x; ++x) {
     for (s32 y = tl.y; y < br.y; ++y)
         {
-            //u32 pixel = 0xdd0000;
             u32 pixel = 0xFFFFFF;
             *pixel_at_index(backbuffer->memory, x, y, backbuffer->width) = pixel;
         }
