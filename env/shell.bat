@@ -1,5 +1,12 @@
 @echo off
-call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+
+set test_vcvars="C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+
+IF NOT EXIST %test_vcvars% (
+    set test_vcvars="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+)
+call %test_vcvars%
+
 set DIRCMD=/o
 
 set proj_root=%~dp0

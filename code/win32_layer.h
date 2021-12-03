@@ -3,7 +3,7 @@
 struct Fi_State
 {
     v2i cursor_pos;
-    u32 cursor_size;
+    v2i cursor_size;
 };
 
 #define WIN32_LAYER_H

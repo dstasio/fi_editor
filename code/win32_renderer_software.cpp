@@ -1,23 +1,23 @@
 // win32_renderer_software.cpp
 #include "win32_renderer_software.h"
+#include "fi_math.h"
 
 #define pixel_at_index(mem, x, y, w) (((u32*)(mem)) + ((y) * (w)) + (x))
 
-internal void sw_draw_square(Renderer_Backbuffer *backbuffer,
-                 v2i pos, u32 size)
+internal void sw_draw_quad(Renderer_Backbuffer *backbuffer,
+                           v2i pos, v2i size, u32 color = 0xFFFFFF)
 {
     v2i tl = {}; // top-left
     v2i br = {}; // bottom-right
     tl.x = max(pos.x, 0);
     tl.y = max(pos.y, 0);
-    br.x = min(pos.x + size, backbuffer->width);
-    br.y = min(pos.y + size, backbuffer->height);
+    br.x = min(pos.x + size.x, backbuffer->width);
+    br.y = min(pos.y + size.y, backbuffer->height);
 
     for (s32 x = tl.x; x < br.x; ++x) {
     for (s32 y = tl.y; y < br.y; ++y)
         {
-            u32 pixel = 0xFFFFFF;
-            *pixel_at_index(backbuffer->memory, x, y, backbuffer->width) = pixel;
+            *pixel_at_index(backbuffer->memory, x, y, backbuffer->width) = color;
         }
     }
 }

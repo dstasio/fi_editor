@@ -1,4 +1,5 @@
 #if !defined(WIN32_PLATFORM_H)
+
 #include <windows.h>
 
 #define KEY_DOWN   VK_DOWN
