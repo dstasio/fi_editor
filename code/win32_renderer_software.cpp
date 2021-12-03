@@ -4,6 +4,33 @@
 
 #define pixel_at_index(mem, x, y, w) (((u32*)(mem)) + ((y) * (w)) + (x))
 
+#include "ext/font8x8_basic.h"
+
+internal void sw_draw_char(Renderer_Backbuffer *backbuffer,
+                           v2i pos, char c, u32 color = 0xFFFFFF)
+{
+    v2i tl = {}; // top-left
+    v2i br = {}; // bottom-right
+    tl.x = max(pos.x,       0);
+    tl.y = max(pos.y+4,     0);
+    br.x = min(pos.x   + 8, backbuffer->width);
+    br.y = min(pos.y+4 + 8, backbuffer->height);
+
+    for (s32 y = 0; y < 8; ++y) {
+        u8 row = font8x8_basic[c][y];
+        for (s32 x = 0; x < 8; ++x) {
+            s32 pixelX = tl.x + x;
+            s32 pixelY = tl.y + y;
+            if ((pixelX >= 0) && (pixelX < (s32)backbuffer->width)  &&
+                (pixelY >= 0) && (pixelY < (s32)backbuffer->height) &&
+                ((row >> x) & 0b1))
+            {
+                *pixel_at_index(backbuffer->memory, pixelX, pixelY, backbuffer->width) = color;
+            }
+        }
+    }
+}
+
 internal void sw_draw_quad(Renderer_Backbuffer *backbuffer,
                            v2i pos, v2i size, u32 color = 0xFFFFFF)
 {
@@ -14,12 +41,10 @@ internal void sw_draw_quad(Renderer_Backbuffer *backbuffer,
     br.x = min(pos.x + size.x, backbuffer->width);
     br.y = min(pos.y + size.y, backbuffer->height);
 
+    for (s32 y = tl.y; y < br.y; ++y) {
     for (s32 x = tl.x; x < br.x; ++x) {
-    for (s32 y = tl.y; y < br.y; ++y)
-        {
-            *pixel_at_index(backbuffer->memory, x, y, backbuffer->width) = color;
-        }
-    }
+        *pixel_at_index(backbuffer->memory, x, y, backbuffer->width) = color;
+    }}
 }
 
 internal void sw_clear_backbuffer(Renderer_Backbuffer *backbuffer)
@@ -44,7 +69,7 @@ internal void sw_resize_backbuffer(Renderer_Backbuffer *backbuffer, u32 width, u
     backbuffer->height                       = height;
     backbuffer->info.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
     backbuffer->info.bmiHeader.biWidth       = width;
-    backbuffer->info.bmiHeader.biHeight      = height;
+    backbuffer->info.bmiHeader.biHeight      = -(s32)height; // negative height -> origin is upper-left
     backbuffer->info.bmiHeader.biPlanes      = 1;
     backbuffer->info.bmiHeader.biBitCount    = 32;
     backbuffer->info.bmiHeader.biCompression = BI_RGB;

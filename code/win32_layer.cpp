@@ -12,6 +12,8 @@
 #include "win32_layer.h"
 #include "win32_renderer_software.cpp"
 
+#include "fi.cpp"
+
 #include <windows.h>
 
 global b32 global_running;
@@ -131,18 +133,15 @@ int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR cmd_line, int sho
                 }
             }
 
-            if (new_input->move_down.down)
-                state.cursor_pos.y -= state.cursor_size.y;
-            if (new_input->move_up.down)
-                state.cursor_pos.y += state.cursor_size.y;
-            if (new_input->move_left.down)
-                state.cursor_pos.x -= state.cursor_size.x;
-            if (new_input->move_right.down)
-                state.cursor_pos.x += state.cursor_size.x;
+            if (new_input->move_up.down)    {state.cursor_pos.y -= state.cursor_size.y; }
+            if (new_input->move_down.down)  {state.cursor_pos.y += state.cursor_size.y; }
+            if (new_input->move_left.down)  {state.cursor_pos.x -= state.cursor_size.x; }
+            if (new_input->move_right.down) {state.cursor_pos.x += state.cursor_size.x; }
 
             sw_clear_backbuffer(&backbuffer);
 
-            sw_draw_quad(&backbuffer, {}, {(s32)backbuffer.width, (s32)backbuffer.height}, 0x2D2C29);
+            sw_draw_quad(&backbuffer, {0, 0}, {(s32)backbuffer.width, (s32)backbuffer.height}, 0x2D2C29);
+            print_buffer(&backbuffer, "Hello Sailor and all other letters that go below this y!?");
             // drawing cursor
             sw_draw_quad(&backbuffer, state.cursor_pos, state.cursor_size);
 
